@@ -1,0 +1,7 @@
+{
+  "name": "nodo-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
