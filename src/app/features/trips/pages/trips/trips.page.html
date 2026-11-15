@@ -1,13 +1,151 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>trips</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <div class="page">
+    @if (loading()) {
+    <div class="center">
+      <ion-spinner name="crescent" aria-label="Cargando"></ion-spinner>
+    </div>
+    } @else if (trips.active(); as trip) {
+    <!-- ============ Con viaje activo ============ -->
+    <header class="heading">
+      <span class="status"><span class="dot" aria-hidden="true"></span>Viaje en curso</span>
+      <h1>{{ trip.name }}</h1>
+      @if (trip.destination) {
+      <p>Destino: {{ trip.destination }}</p>
+      }
+    </header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">trips</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <section class="code-card">
+      <div>
+        <span class="code-label">Código para invitar</span>
+        <span class="code">{{ trip.code }}</span>
+      </div>
+      <button type="button" class="btn-share" (click)="shareCode()">
+        <ion-icon name="share-social-outline" aria-hidden="true"></ion-icon>
+        Compartir
+      </button>
+    </section>
+
+    <section class="members">
+      <h2>Integrantes · {{ members().length }}</h2>
+      <ul>
+        @for (member of members(); track member.userId) {
+        <li [style.--c]="member.color">
+          <span class="avatar" aria-hidden="true">{{ member.initial }}</span>
+          <div class="info">
+            <span class="name">
+              {{ member.name }} @if (member.isMe) {
+              <span class="me">· tú</span>
+              }
+            </span>
+            <span class="detail"> {{ member.vehicleLabel }} @if (member.isOwner) { · creó el viaje } </span>
+          </div>
+        </li>
+        }
+      </ul>
+    </section>
+
+    @if (error(); as message) {
+    <div class="error-banner" role="alert">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <span>{{ message }}</span>
+    </div>
+    }
+
+    <div class="actions">
+      <button type="button" class="btn-main" (click)="goToMap()">Ver en el mapa</button>
+      <button type="button" class="btn-danger" [disabled]="busy()" (click)="closeTrip()">
+        {{ trips.isOwner() ? 'Terminar viaje' : 'Salir del viaje' }}
+      </button>
+    </div>
+    } @else {
+    <!-- ============ Sin viaje: crear o unirse ============ -->
+    <header class="heading">
+      <h1>¿A dónde van hoy?</h1>
+      <p>Crea un viaje o entra al de tu grupo con el código.</p>
+    </header>
+
+    <div class="segmented" role="tablist" aria-label="Modo">
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'create'" (click)="setTab('create')">
+        Crear viaje
+      </button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'join'" (click)="setTab('join')">Unirme</button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (tab() === 'create') {
+      <div class="field">
+        <label for="trip-name">Nombre del viaje</label>
+        <input
+          id="trip-name"
+          class="input"
+          [class.invalid]="invalid('name')"
+          formControlName="name"
+          placeholder="Ej. Paseo a Melgar"
+          maxlength="40"
+          autocomplete="off"
+        />
+        @if (invalid('name')) {
+        <small>Ponle un nombre al viaje.</small>
+        }
+      </div>
+
+      <div class="field">
+        <label for="trip-destination">Destino <span class="optional">(opcional)</span></label>
+        <input
+          id="trip-destination"
+          class="input"
+          formControlName="destination"
+          placeholder="Ej. Melgar, Tolima"
+          maxlength="60"
+          autocomplete="off"
+        />
+      </div>
+      } @else {
+      <div class="field">
+        <label for="trip-code">Código de invitación</label>
+        <input
+          id="trip-code"
+          class="input code-input"
+          [class.invalid]="invalid('code')"
+          formControlName="code"
+          maxlength="6"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+        />
+        @if (invalid('code')) {
+        <small>El código tiene 6 letras o números.</small>
+        } @else {
+        <span class="hint">6 caracteres. Te lo comparte quien creó el viaje.</span>
+        }
+      </div>
+      }
+
+      <fieldset>
+        <legend>¿En qué vas?</legend>
+        <div class="vehicles">
+          @for (option of vehicles; track option.value) {
+          <button type="button" [attr.aria-pressed]="vehicle() === option.value" (click)="vehicle.set(option.value)">
+            <span class="emoji" aria-hidden="true">{{ option.emoji }}</span>
+            {{ option.label }}
+          </button>
+          }
+        </div>
+      </fieldset>
+
+      @if (error(); as message) {
+      <div class="error-banner" role="alert">
+        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ message }}</span>
+      </div>
+      }
+
+      <button type="submit" class="btn-main" [disabled]="busy()">
+        @if (busy()) {
+        <ion-spinner name="crescent" aria-label="Cargando"></ion-spinner>
+        } @else if (tab() === 'create') { Crear viaje } @else { Unirme al viaje }
+      </button>
+    </form>
+    }
+  </div>
 </ion-content>
