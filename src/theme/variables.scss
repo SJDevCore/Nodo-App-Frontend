@@ -1,2 +1,64 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// src/theme/variables.scss
+// Tema de Nodo: siempre oscuro, no depende del modo del sistema.
+@use 'sass:color';
+
+$bg: #0b1220;
+$text: #f1f5f9;
+
+:root {
+  // Base
+  --ion-background-color: #{$bg};
+  --ion-background-color-rgb: 11, 18, 32;
+  --ion-text-color: #{$text};
+  --ion-text-color-rgb: 241, 245, 249;
+
+  // Escalones intermedios entre fondo y texto.
+  // Ionic los usa en bordes de inputs, placeholders, separadores, etc.
+  @for $i from 1 through 19 {
+    $step: $i * 50;
+    --ion-background-color-step-#{$step}: #{color.mix($text, $bg, $i * 5%)};
+    --ion-text-color-step-#{$step}: #{color.mix($bg, $text, $i * 5%)};
+  }
+
+  // Propias de Nodo
+  --nodo-surface: #131c31;
+  --nodo-border: #26334f;
+  --nodo-muted: #a8b5cc;
+  --nodo-tabbar: #0e1626;
+  --nodo-primary-soft: #8fa8ff;
+
+  // Componentes de Ionic
+  --ion-card-background: var(--nodo-surface);
+  --ion-item-background: var(--nodo-surface);
+  --ion-toolbar-background: #{$bg};
+  --ion-tab-bar-background: var(--nodo-tabbar);
+  --ion-border-color: var(--nodo-border);
+
+  // Tipografía
+  --ion-font-family: 'Inter', system-ui, sans-serif;
+  --nodo-font-title: 'Space Grotesk', 'Inter', sans-serif;
+
+  // Primario
+  --ion-color-primary: #6b8aff;
+  --ion-color-primary-rgb: 107, 138, 255;
+  --ion-color-primary-contrast: #0b1220;
+  --ion-color-primary-contrast-rgb: 11, 18, 32;
+  --ion-color-primary-shade: #5e79e0;
+  --ion-color-primary-tint: #7a96ff;
+
+  // Éxito
+  --ion-color-success: #34d399;
+  --ion-color-success-rgb: 52, 211, 153;
+  --ion-color-success-contrast: #0b1220;
+  --ion-color-success-contrast-rgb: 11, 18, 32;
+  --ion-color-success-shade: #2eba87;
+  --ion-color-success-tint: #48d7a3;
+
+  // Peligro
+  --ion-color-danger: #fca5a5;
+  --ion-color-danger-rgb: 252, 165, 165;
+  --ion-color-danger-contrast: #0b1220;
+  --ion-color-danger-contrast-rgb: 11, 18, 32;
+  --ion-color-danger-shade: #de9191;
+  --ion-color-danger-tint: #fcaeae;
+}
