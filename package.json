@@ -1,7 +1,10 @@
 {
   "name": "nodo-app",
   "version": "0.0.1",
-  "author": "Ionic Framework",
+  "author": "Santiago Jiménez",
+  "contributors": [
+    "Sebastián Gómez"
+  ],
   "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",
@@ -48,6 +51,7 @@
     "@angular/cli": "22.2.6",
     "@angular/compiler-cli": "22.2.5",
     "@angular/language-service": "22.2.5",
+    "@capacitor/assets": "^4.0.0",
     "@capacitor/cli": "8.6.2",
     "@ionic/angular-toolkit": "^13.0.0",
     "@ionic/eslint-config": "^0.5.0",
