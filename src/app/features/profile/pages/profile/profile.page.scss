@@ -150,14 +150,33 @@
     gap: 10px;
   }
 
+  // Cada fila: el viaje (se puede tocar) y, a la derecha, el botón de quitar.
   li {
-    padding: 14px 16px;
     border-radius: 18px;
     background: var(--nodo-surface);
     border: 1px solid var(--nodo-border);
     display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .trip {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 4px 14px 16px;
+    border: none;
+    background: transparent;
+    color: var(--ion-text-color);
+    font: inherit;
+    text-align: left;
+    display: flex;
     flex-direction: column;
     gap: 6px;
+    cursor: pointer;
+
+    &:active {
+      background: rgba(var(--ion-color-primary-rgb), 0.08);
+    }
   }
 
   .row {
@@ -200,8 +219,31 @@
       gap: 5px;
     }
 
+    .photos {
+      color: var(--nodo-primary-soft);
+      font-weight: 500;
+    }
+
     ion-icon {
       font-size: 15px;
+    }
+  }
+
+  .btn-remove {
+    flex-shrink: 0;
+    width: 52px;
+    border: none;
+    border-left: 1px solid var(--nodo-border);
+    background: transparent;
+    color: var(--nodo-muted);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:active {
+      color: var(--ion-color-danger);
     }
   }
 

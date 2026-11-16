@@ -49,6 +49,12 @@ export class TripsService {
     this._history.set(trips);
   }
 
+  /** Quita un viaje de mi historial (los demás integrantes lo siguen viendo). */
+  async removeFromHistory(tripId: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${tripId}/history`));
+    this._history.update((trips) => trips.filter((trip) => trip.id !== tripId));
+  }
+
   async create(name: string, vehicle: Vehicle, destination?: string): Promise<Trip> {
     // El destino es opcional: si viene vacío no se envía,
     // porque el backend rechazaría una cadena vacía.

@@ -13,7 +13,13 @@
       Agregar recuerdo }
     </button>
 
-    @if (error(); as message) {
+    <!-- Filtro activo: se llegó desde el historial de Perfil -->
+    @if (tripFilter()) {
+    <div class="filter">
+      <span>Fotos de <strong>{{ tripFilterName() }}</strong></span>
+      <button type="button" (click)="clearFilter()">Ver todos</button>
+    </div>
+    } @if (error(); as message) {
     <div class="error-banner" role="alert">
       <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
       <span>{{ message }}</span>
@@ -22,13 +28,18 @@
     <div class="center">
       <ion-spinner name="crescent" aria-label="Cargando"></ion-spinner>
     </div>
-    } @else if (total() === 0) {
+    } @else if (isEmpty()) {
     <div class="empty">
       <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+      @if (tripFilter()) {
+      <h2>Este viaje no tiene fotos</h2>
+      <p>Nadie del grupo guardó recuerdos en este viaje.</p>
+      } @else {
       <h2>Aún no hay recuerdos</h2>
       <p>Toma una foto durante el viaje: quedará aquí con el lugar donde la tomaste y la verá todo tu grupo.</p>
+      }
     </div>
-    } @else { @for (group of groups(); track group.name) {
+    } @else { @for (group of groups(); track group.key) {
     <section class="group">
       <div class="group-head">
         <h2>{{ group.name }}</h2>
@@ -38,7 +49,10 @@
       <ul class="grid">
         @for (memory of group.items; track memory.id) {
         <li class="card">
-          <img [src]="memory.thumbUrl" [alt]="memory.title" loading="lazy" />
+          <!-- Tocar la foto la abre en grande -->
+          <button type="button" class="thumb" (click)="open(memory)" [attr.aria-label]="'Ampliar ' + memory.title">
+            <img [src]="memory.thumbUrl" alt="" loading="lazy" />
+          </button>
           <div class="body">
             <span class="title">{{ memory.title }}</span>
             <span class="meta">{{ memory.when }} · {{ memory.by }}</span>
@@ -66,4 +80,35 @@
     </section>
     } }
   </div>
+
+  <!-- Visor: la foto en grande, con sus datos -->
+  <ion-modal class="viewer-modal" [isOpen]="selected() !== null" (didDismiss)="close()">
+    <ng-template>
+      @if (selected(); as photo) {
+      <div class="viewer">
+        <div class="viewer-bar">
+          <button type="button" (click)="close()" aria-label="Cerrar">
+            <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+          </button>
+          <!-- Solo el autor puede borrar su foto -->
+          @if (photo.mine) {
+          <button type="button" class="danger" (click)="remove(photo)" aria-label="Borrar foto">
+            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+          </button>
+          }
+        </div>
+
+        <img [src]="photo.fullUrl" [alt]="photo.title" />
+
+        <div class="viewer-info">
+          <strong>{{ photo.title }}</strong>
+          <span>{{ photo.when }} · {{ photo.by }}</span>
+          @if (photo.trip) {
+          <span>{{ photo.trip.name }}</span>
+          }
+        </div>
+      </div>
+      }
+    </ng-template>
+  </ion-modal>
 </ion-content>

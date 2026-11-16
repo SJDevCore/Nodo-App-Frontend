@@ -2,12 +2,31 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { alertCircleOutline, logOutOutline, mailOutline, peopleOutline, timeOutline } from 'ionicons/icons';
+import {
+  alertCircleOutline,
+  imagesOutline,
+  logOutOutline,
+  mailOutline,
+  peopleOutline,
+  timeOutline,
+  trashOutline,
+} from 'ionicons/icons';
 
 import { AuthService } from '../../../../core/services/auth.service';
 import { MemoriesService } from '../../../../core/services/memories.service';
 import { TrackingService } from '../../../../core/services/tracking.service';
 import { TripsService } from '../../../../core/services/trips.service';
+import { toFriendlyError } from '../../../../core/utils/http-error';
+
+interface HistoryItem {
+  id: string;
+  name: string;
+  destination?: string;
+  date: string;
+  members: number;
+  duration: string | null;
+  photos: number;
+}
 
 const DATE_FORMAT = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -53,19 +72,34 @@ export class ProfilePage {
   });
 
   /** Historial con los textos ya listos para mostrar. */
-  readonly history = computed(() =>
-    this.trips.history().map((trip) => ({
+  readonly history = computed<HistoryItem[]>(() => {
+    // Cuántas fotos tiene cada viaje, contadas una sola vez.
+    const photosByTrip = new Map<string, number>();
+    for (const memory of this.memories.items()) {
+      if (memory.trip) photosByTrip.set(memory.trip.id, (photosByTrip.get(memory.trip.id) ?? 0) + 1);
+    }
+
+    return this.trips.history().map((trip) => ({
       id: trip.id,
       name: trip.name,
       destination: trip.destination,
       date: DATE_FORMAT.format(new Date(trip.endedAt ?? trip.createdAt)),
       members: trip.members.length,
       duration: trip.endedAt ? formatDuration(trip.createdAt, trip.endedAt) : null,
-    })),
-  );
+      photos: photosByTrip.get(trip.id) ?? 0,
+    }));
+  });
 
   constructor() {
-    addIcons({ alertCircleOutline, logOutOutline, mailOutline, peopleOutline, timeOutline });
+    addIcons({
+      alertCircleOutline,
+      imagesOutline,
+      logOutOutline,
+      mailOutline,
+      peopleOutline,
+      timeOutline,
+      trashOutline,
+    });
   }
 
   /** Cada vez que se entra: el historial cambia al terminar un viaje. */
@@ -75,6 +109,31 @@ export class ProfilePage {
 
     this.error.set(history.status === 'rejected' ? 'No se pudo cargar tu historial de viajes.' : null);
     this.loading.set(false);
+  }
+
+  /** Abre Recuerdos mostrando solo las fotos de ese viaje. */
+  openTrip(trip: HistoryItem): void {
+    void this.router.navigate(['/tabs/memories'], { queryParams: { trip: trip.id, name: trip.name } });
+  }
+
+  async removeTrip(trip: HistoryItem): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: '¿Quitar del historial?',
+      message: `"${trip.name}" dejará de aparecer en tu historial. Las fotos del viaje se conservan en Recuerdos.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Quitar', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role !== 'confirm') return;
+
+    try {
+      await this.trips.removeFromHistory(trip.id);
+    } catch (err) {
+      this.error.set(toFriendlyError(err));
+    }
   }
 
   async logout(): Promise<void> {

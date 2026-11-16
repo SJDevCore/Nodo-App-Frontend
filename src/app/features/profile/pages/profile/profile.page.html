@@ -45,14 +45,14 @@
     <section class="history">
       <h2>Historial de viajes</h2>
 
-      @if (loading()) {
-      <div class="center">
-        <ion-spinner name="crescent" aria-label="Cargando"></ion-spinner>
-      </div>
-      } @else if (error(); as message) {
+      @if (error(); as message) {
       <div class="error-banner" role="alert">
         <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
         <span>{{ message }}</span>
+      </div>
+      } @if (loading()) {
+      <div class="center">
+        <ion-spinner name="crescent" aria-label="Cargando"></ion-spinner>
       </div>
       } @else if (history().length === 0) {
       <p class="empty">Cuando termines un viaje aparecerá aquí.</p>
@@ -60,25 +60,41 @@
       <ul>
         @for (trip of history(); track trip.id) {
         <li>
-          <div class="row">
-            <span class="trip-name">{{ trip.name }}</span>
-            <span class="date">{{ trip.date }}</span>
-          </div>
-          @if (trip.destination) {
-          <span class="destination">{{ trip.destination }}</span>
-          }
-          <div class="meta">
-            <span>
-              <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
-              {{ trip.members }} {{ trip.members === 1 ? 'integrante' : 'integrantes' }}
+          <!-- Tocar el viaje abre sus fotos en Recuerdos -->
+          <button type="button" class="trip" (click)="openTrip(trip)" [attr.aria-label]="'Ver fotos de ' + trip.name">
+            <span class="row">
+              <span class="trip-name">{{ trip.name }}</span>
+              <span class="date">{{ trip.date }}</span>
             </span>
-            @if (trip.duration) {
-            <span>
-              <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
-              {{ trip.duration }}
-            </span>
+            @if (trip.destination) {
+            <span class="destination">{{ trip.destination }}</span>
             }
-          </div>
+            <span class="meta">
+              <span>
+                <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
+                {{ trip.members }}
+              </span>
+              @if (trip.duration) {
+              <span>
+                <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+                {{ trip.duration }}
+              </span>
+              }
+              <span class="photos">
+                <ion-icon name="images-outline" aria-hidden="true"></ion-icon>
+                {{ trip.photos }} {{ trip.photos === 1 ? 'foto' : 'fotos' }}
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="btn-remove"
+            (click)="removeTrip(trip)"
+            [attr.aria-label]="'Quitar ' + trip.name + ' del historial'"
+          >
+            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+          </button>
         </li>
         }
       </ul>
