@@ -229,6 +229,10 @@
     font-size: 13px;
     color: var(--nodo-muted);
   }
+  // Quien está en línea se resalta en verde; el resto queda en gris.
+  .detail:not(.offline) {
+    color: var(--ion-color-success);
+  }
 
   .go {
     flex-shrink: 0;

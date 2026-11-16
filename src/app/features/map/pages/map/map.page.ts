@@ -42,7 +42,12 @@ interface MemberView {
   emoji: string;
   vehicleLabel: string;
   isMe: boolean;
+  /** Última posición conocida, o null si nunca la compartió. */
   position: LatLng | null;
+  /** ¿Conectado ahora? Si es false y hay posición, es la última que se le conoció. */
+  online: boolean;
+  /** Texto de estado: "En línea", "Últ. vez hace 5 min", "Sin ubicación". */
+  status: string;
 }
 
 interface RouteInfo {
@@ -57,6 +62,7 @@ interface OsrmResponse {
 
 const BOGOTA: L.LatLngTuple = [4.711, -74.0721];
 const ROUTE_REFRESH_MS = 10_000;
+const CLOCK_MS = 30_000;
 const THEME_KEY = 'map_theme';
 
 @Component({
@@ -85,6 +91,13 @@ export class MapPage implements OnDestroy {
   private centered = false;
   private lastRouteAt = 0;
   private themeLoaded = false;
+
+  /**
+   * Reloj: se actualiza cada 30 s para que los textos "hace X min" avancen solos.
+   * Sin esto, el texto quedaría congelado hasta que llegara otra posición.
+   */
+  private readonly now = signal(Date.now());
+  private readonly clock = setInterval(() => this.now.set(Date.now()), CLOCK_MS);
 
   readonly mapTheme = signal<MapTheme>('dark');
   readonly sheetOpen = signal(true);
@@ -115,17 +128,19 @@ export class MapPage implements OnDestroy {
           vehicleLabel: '',
           isMe: true,
           position: mine,
+          online: mine !== null,
+          status: mine ? 'En línea' : 'Buscando ubicación…',
         },
       ];
     }
 
     const positions = this.tracking.positions();
+    const now = this.now();
 
     return trip.members.map((member, index) => {
       const isMe = member.userId === user?.id;
-      const live = positions.get(member.userId);
       const info = vehicleInfo(member.vehicle);
-      return {
+      const base = {
         userId: member.userId,
         name: member.name,
         initial: member.name.charAt(0).toUpperCase(),
@@ -133,13 +148,32 @@ export class MapPage implements OnDestroy {
         emoji: info.emoji,
         vehicleLabel: info.label,
         isMe,
-        // La mía sale directo del GPS; la de los demás, del servidor.
-        position: isMe ? mine : live ? { lat: live.lat, lng: live.lng } : null,
+      };
+
+      // La mía sale directo del GPS: no espera al servidor.
+      if (isMe) {
+        return {
+          ...base,
+          position: mine,
+          online: mine !== null,
+          status: mine ? 'En línea' : 'Buscando ubicación…',
+        };
+      }
+
+      const live = positions.get(member.userId);
+      if (!live) {
+        return { ...base, position: null, online: false, status: 'Sin ubicación' };
+      }
+      return {
+        ...base,
+        position: { lat: live.lat, lng: live.lng },
+        online: live.online,
+        status: live.online ? 'En línea' : `Últ. vez ${timeAgo(live.at, now)}`,
       };
     });
   });
 
-  readonly onlineCount = computed(() => this.members().filter((m) => m.position !== null).length);
+  readonly onlineCount = computed(() => this.members().filter((m) => m.online).length);
 
   constructor() {
     addIcons({
@@ -189,6 +223,7 @@ export class MapPage implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearInterval(this.clock);
     this.map?.remove();
   }
 
@@ -233,7 +268,10 @@ export class MapPage implements OnDestroy {
     }
   }
 
-  /** Tocar un integrante: si soy yo, centra; si es otro, traza la ruta hasta él. */
+  /**
+   * Tocar un integrante: si soy yo, centra; si es otro, traza la ruta hasta él.
+   * Si está desconectado, la ruta va hasta su última posición conocida.
+   */
   async selectMember(member: MemberView): Promise<void> {
     if (member.isMe) {
       this.centerOnMe();
@@ -296,12 +334,12 @@ export class MapPage implements OnDestroy {
       if (!member.position) continue;
       visible.add(member.userId);
       const latLng: L.LatLngTuple = [member.position.lat, member.position.lng];
-      const look = `${member.color}|${member.emoji}|${member.initial}`;
+      const look = `${member.color}|${member.emoji}|${member.initial}|${member.online}`;
 
       const existing = this.markers.get(member.userId);
       if (existing) {
         existing.setLatLng(latLng);
-        // Si cambió el color o el vehículo (p. ej. al entrar a un viaje), se redibuja.
+        // Si cambió el color, el vehículo o el estado de conexión, se redibuja.
         if (this.markerLooks.get(member.userId) !== look) {
           existing.setIcon(this.memberIcon(member));
           this.markerLooks.set(member.userId, look);
@@ -330,7 +368,7 @@ export class MapPage implements OnDestroy {
       this.markerLooks.set(userId, look);
     }
 
-    // Quita los marcadores de quienes ya no comparten posición.
+    // Quita los marcadores de quienes ya no están en el viaje.
     for (const [userId, marker] of this.markers) {
       if (!visible.has(userId)) {
         marker.remove();
@@ -354,7 +392,7 @@ export class MapPage implements OnDestroy {
 
   private memberIcon(member: MemberView): L.DivIcon {
     const el = document.createElement('div');
-    el.className = member.isMe ? 'nodo-marker me' : 'nodo-marker';
+    el.className = ['nodo-marker', member.isMe ? 'me' : '', member.online ? '' : 'offline'].filter(Boolean).join(' ');
     el.style.setProperty('--c', member.color);
 
     const initial = document.createElement('span');
@@ -421,7 +459,8 @@ export class MapPage implements OnDestroy {
 
       this.routeError.set(null);
       this.route.set({
-        name: target.name,
+        // Si está desconectado, se aclara que la ruta va a donde estuvo, no a donde está.
+        name: target.online ? target.name : `la última ubicación de ${target.name}`,
         distance: formatDistance(best.distance),
         duration: formatDuration(best.duration),
       });
@@ -442,4 +481,18 @@ function formatDuration(seconds: number): string {
   const minutes = Math.max(1, Math.round(seconds / 60));
   if (minutes < 60) return `${minutes} min`;
   return `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+}
+
+/** "hace 5 min", "hace 2 h"… a partir de dos marcas de tiempo en milisegundos. */
+function timeAgo(at: number, now: number): string {
+  // max(0): el reloj del celular y el del servidor pueden diferir unos segundos.
+  const minutes = Math.floor(Math.max(0, now - at) / 60_000);
+  if (minutes < 1) return 'hace un momento';
+  if (minutes < 60) return `hace ${minutes} min`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `hace ${hours} h`;
+
+  const days = Math.floor(hours / 24);
+  return days === 1 ? 'hace 1 día' : `hace ${days} días`;
 }

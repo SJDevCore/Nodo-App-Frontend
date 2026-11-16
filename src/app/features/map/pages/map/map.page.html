@@ -37,7 +37,7 @@
     <button type="button" class="sheet-head" (click)="toggleSheet()" [attr.aria-expanded]="sheetOpen()">
       <span class="titles">
         <span class="title">{{ trip.name }}</span>
-        <span class="sub">{{ onlineCount() }} de {{ members().length }} en el mapa</span>
+        <span class="sub">{{ onlineCount() }} de {{ members().length }} en línea</span>
       </span>
       <ion-icon [name]="sheetOpen() ? 'chevron-down-outline' : 'chevron-up-outline'" aria-hidden="true"></ion-icon>
     </button>
@@ -79,8 +79,8 @@
               <span class="me">· tú</span>
               }
             </span>
-            <span class="detail">
-              {{ member.emoji }} {{ member.vehicleLabel }} · {{ member.position ? 'En línea' : 'Sin ubicación' }}
+            <span class="detail" [class.offline]="!member.online">
+              {{ member.emoji }} {{ member.vehicleLabel }} · {{ member.status }}
             </span>
           </span>
           @if (!member.isMe && member.position) {

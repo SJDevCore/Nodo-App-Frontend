@@ -79,6 +79,11 @@
     align-items: center;
     justify-content: center;
   }
+  &.offline {
+    opacity: 0.55;
+    filter: grayscale(0.7);
+    border-style: dashed;
+  }
 }
 
 .leaflet-tooltip.nodo-label {

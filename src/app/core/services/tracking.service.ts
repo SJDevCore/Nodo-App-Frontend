@@ -37,7 +37,7 @@ export class TrackingService {
   private readonly _connected = signal(false);
   private readonly _error = signal<string | null>(null);
 
-  /** Posiciones de los integrantes, por userId. */
+  /** Última posición conocida de cada integrante, por userId (conectado o no). */
   readonly positions = this._positions.asReadonly();
   /** Mi propia posición, directa del GPS (no espera al servidor). */
   readonly myPosition = this._myPosition.asReadonly();
@@ -78,7 +78,6 @@ export class TrackingService {
     this.leaveTrip();
     this.tripId = tripId;
 
-    // CONTRATO 1: el token viaja en handshake.auth.token
     const socket = io(`${environment.wsUrl}/tracking`, {
       auth: { token: this.auth.token() },
       transports: ['websocket'],
@@ -102,16 +101,17 @@ export class TrackingService {
       this._error.set('No se pudo conectar con el servidor en vivo.');
     });
 
+    // Alguien envió su posición: está conectado.
     socket.on('location:updated', (position: LivePosition) => {
-      this._positions.update((current) => new Map(current).set(position.userId, position));
+      this._positions.update((current) => new Map(current).set(position.userId, { ...position, online: true }));
     });
 
-    // CONTRATO 4: member:offline llega como { userId }
+    // Alguien se desconectó: NO se borra. Se conserva su última posición, marcada como desconectada.
     socket.on('member:offline', ({ userId }: { userId: string }) => {
       this._positions.update((current) => {
-        const next = new Map(current);
-        next.delete(userId);
-        return next;
+        const last = current.get(userId);
+        if (!last) return current;
+        return new Map(current).set(userId, { ...last, online: false });
       });
     });
 
@@ -153,13 +153,13 @@ export class TrackingService {
   private joinRoom(): void {
     if (!this.socket || !this.tripId) return;
 
-    // CONTRATO 2: trip:join recibe { tripId } y responde { ok, positions }
     this.socket.emit('trip:join', { tripId: this.tripId }, (ack: JoinAck) => {
       if (!ack?.ok) {
         this._error.set(ack?.message ?? 'No se pudo entrar al viaje en vivo.');
         return;
       }
       this.joined = true;
+      // El servidor manda la última posición de cada integrante y si está conectado.
       this._positions.set(new Map((ack.positions ?? []).map((p) => [p.userId, p])));
       // Ya dentro de la sala: ahora sí se envía la posición que estaba esperando.
       this.sendLastPosition(true);
@@ -173,7 +173,6 @@ export class TrackingService {
     if (!force && now - this.lastSent < MIN_SEND_MS) return;
     this.lastSent = now;
 
-    // CONTRATO 3: location:update recibe { lat, lng, heading, speed }
     this.socket.emit('location:update', this.lastPosition);
   }
 }

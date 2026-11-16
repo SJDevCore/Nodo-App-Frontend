@@ -5,8 +5,10 @@ export interface LivePosition {
   lng: number;
   heading: number | null;
   speed: number | null;
-  /** Fecha ISO en que el servidor la recibió. */
-  at: string;
+  /** Momento en que el servidor la recibió, en milisegundos. */
+  at: number;
+  /** ¿Está conectado ahora? Si es false, la posición es la última que se le conoció. */
+  online: boolean;
 }
 
 export interface LatLng {
