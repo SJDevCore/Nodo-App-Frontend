@@ -1,13 +1,95 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>profile</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <div class="page">
+    <header class="heading">
+      <h1>Perfil</h1>
+    </header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">profile</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    @if (auth.user(); as user) {
+    <section class="card user">
+      <span class="avatar" aria-hidden="true">{{ initial() }}</span>
+      <div class="info">
+        <span class="name">{{ user.name }}</span>
+        <span class="email">
+          <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+          {{ user.email }}
+        </span>
+      </div>
+    </section>
+    }
+
+    <section class="stats" aria-label="Resumen">
+      <div class="stat">
+        <span class="number">{{ stats().trips }}</span>
+        <span class="label">{{ stats().trips === 1 ? 'Viaje' : 'Viajes' }}</span>
+      </div>
+      <div class="stat">
+        <span class="number">{{ stats().photos }}</span>
+        <span class="label">{{ stats().photos === 1 ? 'Foto' : 'Fotos' }}</span>
+      </div>
+      <div class="stat">
+        <span class="number">{{ stats().companions }}</span>
+        <span class="label">{{ stats().companions === 1 ? 'Compañero' : 'Compañeros' }}</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Viaje actual</h2>
+      @if (trips.active(); as trip) {
+      <p class="value">{{ trip.name }}</p>
+      <p class="muted">Código {{ trip.code }} · {{ trip.members.length }} integrantes</p>
+      } @else {
+      <p class="muted">No estás en ningún viaje.</p>
+      }
+    </section>
+
+    <section class="history">
+      <h2>Historial de viajes</h2>
+
+      @if (loading()) {
+      <div class="center">
+        <ion-spinner name="crescent" aria-label="Cargando"></ion-spinner>
+      </div>
+      } @else if (error(); as message) {
+      <div class="error-banner" role="alert">
+        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ message }}</span>
+      </div>
+      } @else if (history().length === 0) {
+      <p class="empty">Cuando termines un viaje aparecerá aquí.</p>
+      } @else {
+      <ul>
+        @for (trip of history(); track trip.id) {
+        <li>
+          <div class="row">
+            <span class="trip-name">{{ trip.name }}</span>
+            <span class="date">{{ trip.date }}</span>
+          </div>
+          @if (trip.destination) {
+          <span class="destination">{{ trip.destination }}</span>
+          }
+          <div class="meta">
+            <span>
+              <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
+              {{ trip.members }} {{ trip.members === 1 ? 'integrante' : 'integrantes' }}
+            </span>
+            @if (trip.duration) {
+            <span>
+              <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+              {{ trip.duration }}
+            </span>
+            }
+          </div>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+
+    <button type="button" class="btn-logout" [disabled]="busy()" (click)="logout()">
+      <ion-icon name="log-out-outline" aria-hidden="true"></ion-icon>
+      Cerrar sesión
+    </button>
+
+    <p class="version">Nodo · versión 1.0</p>
+  </div>
 </ion-content>

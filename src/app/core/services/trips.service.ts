@@ -1,20 +1,24 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import type { Trip, Vehicle } from '../models/trip.model';
-
 import { AuthService } from './auth.service';
+
 @Injectable({ providedIn: 'root' })
 export class TripsService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
   private readonly apiUrl = `${environment.apiUrl}/trips`;
 
-  // El viaje activo vive aquí porque lo usan dos pantallas: Viaje y Mapa.
+  // El viaje activo vive aquí porque lo usan varias pantallas: Viaje, Mapa y Perfil.
   private readonly _active = signal<Trip | null>(null);
   readonly active = this._active.asReadonly();
+
+  private readonly _history = signal<Trip[]>([]);
+  /** Viajes terminados, del más reciente al más antiguo. */
+  readonly history = this._history.asReadonly();
 
   /** ¿El usuario actual creó el viaje activo? */
   readonly isOwner = computed(() => {
@@ -37,6 +41,12 @@ export class TripsService {
       }
       throw err;
     }
+  }
+
+  /** Carga los viajes terminados del usuario. */
+  async loadHistory(): Promise<void> {
+    const trips = await firstValueFrom(this.http.get<Trip[]>(`${this.apiUrl}/history`));
+    this._history.set(trips);
   }
 
   async create(name: string, vehicle: Vehicle, destination?: string): Promise<Trip> {
@@ -75,8 +85,9 @@ export class TripsService {
     this._active.set(null);
   }
 
-  /** Olvida el viaje en memoria. Se llama al cerrar sesión. */
+  /** Olvida los viajes en memoria. Se llama al cerrar sesión. */
   clear(): void {
     this._active.set(null);
+    this._history.set([]);
   }
 }

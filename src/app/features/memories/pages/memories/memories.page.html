@@ -1,13 +1,69 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>memories</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <div class="page">
+    <header class="heading">
+      <h1>Recuerdos</h1>
+      <p>Fotos y lugares de tus viajes en grupo.</p>
+    </header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">memories</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <button type="button" class="btn-add" [disabled]="busy()" (click)="add()">
+      @if (busy()) {
+      <ion-spinner name="crescent" aria-label="Subiendo"></ion-spinner>
+      } @else {
+      <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+      Agregar recuerdo }
+    </button>
+
+    @if (error(); as message) {
+    <div class="error-banner" role="alert">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <span>{{ message }}</span>
+    </div>
+    } @if (loading()) {
+    <div class="center">
+      <ion-spinner name="crescent" aria-label="Cargando"></ion-spinner>
+    </div>
+    } @else if (total() === 0) {
+    <div class="empty">
+      <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+      <h2>Aún no hay recuerdos</h2>
+      <p>Toma una foto durante el viaje: quedará aquí con el lugar donde la tomaste y la verá todo tu grupo.</p>
+    </div>
+    } @else { @for (group of groups(); track group.name) {
+    <section class="group">
+      <div class="group-head">
+        <h2>{{ group.name }}</h2>
+        <span>{{ group.items.length }} {{ group.items.length === 1 ? 'foto' : 'fotos' }}</span>
+      </div>
+
+      <ul class="grid">
+        @for (memory of group.items; track memory.id) {
+        <li class="card">
+          <img [src]="memory.thumbUrl" [alt]="memory.title" loading="lazy" />
+          <div class="body">
+            <span class="title">{{ memory.title }}</span>
+            <span class="meta">{{ memory.when }} · {{ memory.by }}</span>
+            @if (memory.lat !== null) {
+            <span class="meta place">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              Con ubicación
+            </span>
+            }
+          </div>
+          <!-- Solo el autor puede borrar su foto -->
+          @if (memory.mine) {
+          <button
+            type="button"
+            class="btn-remove"
+            (click)="remove(memory)"
+            [attr.aria-label]="'Borrar ' + memory.title"
+          >
+            <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+          </button>
+          }
+        </li>
+        }
+      </ul>
+    </section>
+    } }
+  </div>
 </ion-content>

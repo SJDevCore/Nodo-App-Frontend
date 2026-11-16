@@ -37,3 +37,80 @@
 // @import '@ionic/angular/css/palettes/dark.system.css';
 
 @import './theme/variables.scss';
+
+/* ---------- Mapa (elementos creados por Leaflet) ---------- */
+
+.nodo-marker {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #131c31;
+  border: 3px solid var(--c);
+  color: var(--c);
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+
+  // Halo alrededor de mi propio marcador.
+  &.me {
+    box-shadow:
+      0 0 0 6px color-mix(in srgb, var(--c) 28%, transparent),
+      0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .badge {
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0b1220;
+    border: 2px solid var(--c);
+    font-size: 13px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.leaflet-tooltip.nodo-label {
+  padding: 3px 8px;
+  border: none;
+  border-radius: 9999px;
+  background: #131c31;
+  color: #f1f5f9;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+
+  // Quita la flechita del tooltip.
+  &::before {
+    display: none;
+  }
+}
+
+.leaflet-container {
+  background: #0b1220;
+  font-family: 'Inter', sans-serif;
+}
+
+.leaflet-control-attribution {
+  background: rgba(11, 18, 32, 0.7) !important;
+  color: #a8b5cc !important;
+
+  a {
+    color: #8fa8ff !important;
+  }
+}
+.nodo-tiles {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.7);
+}

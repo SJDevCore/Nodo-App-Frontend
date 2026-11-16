@@ -1,5 +1,13 @@
 <ion-content>
   <div class="auth-container">
+    <!-- Cielo de estrellas: tres capas a distinta velocidad y una estrella fugaz -->
+    <div class="stars" aria-hidden="true">
+      <span class="s1"></span>
+      <span class="s2"></span>
+      <span class="s3"></span>
+      <i class="shooting"></i>
+    </div>
+
     @if (mode() === 'welcome') {
     <!-- 1. Bienvenida -->
     <section class="view welcome">

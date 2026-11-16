@@ -1,0 +1,330 @@
+.map {
+  position: absolute;
+  inset: 0;
+  background: var(--ion-background-color);
+  // Encierra los z-index de Leaflet: dentro del mapa siguen ordenados,
+  // pero hacia afuera el mapa cuenta como una sola capa de nivel 0.
+  isolation: isolate;
+  z-index: 0;
+}
+.chip {
+  top: calc(var(--ion-safe-area-top, 0px) + 12px);
+  left: 12px;
+  max-width: calc(100% - 80px);
+  padding: 8px 14px;
+  border-radius: 9999px;
+  background: var(--nodo-surface);
+  border: 1px solid var(--nodo-border);
+  font-size: 13px;
+  font-weight: 600;
+
+  &.warn {
+    color: #fcd34d;
+  }
+}
+
+.btn-locate {
+  top: calc(var(--ion-safe-area-top, 0px) + 12px);
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: 1px solid var(--nodo-border);
+  background: var(--nodo-surface);
+  color: var(--ion-text-color);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+/* ---------- Hoja inferior ---------- */
+
+.sheet,
+.empty {
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 24px;
+  background: var(--nodo-surface);
+  border: 1px solid var(--nodo-border);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.sheet {
+  max-height: 52%;
+  padding: 6px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.sheet-head {
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  color: var(--ion-text-color);
+  font: inherit;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+
+  .titles {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .title {
+    font-family: var(--nodo-font-title);
+    font-size: 18px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sub {
+    font-size: 13px;
+    color: var(--nodo-muted);
+  }
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    color: var(--nodo-muted);
+  }
+}
+
+.route {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(var(--ion-color-primary-rgb), 0.16);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.45);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  > ion-icon {
+    flex-shrink: 0;
+    font-size: 22px;
+    color: var(--nodo-primary-soft);
+  }
+
+  .route-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    color: var(--nodo-muted);
+
+    strong {
+      font-family: var(--nodo-font-title);
+      font-size: 18px;
+      color: var(--ion-text-color);
+    }
+  }
+
+  button {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    margin: -6px -8px -6px 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ion-text-color);
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+}
+
+.route-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(var(--ion-color-danger-rgb), 0.12);
+  color: var(--ion-color-danger);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.member {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1.5px solid transparent;
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+  font: inherit;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--ion-color-primary);
+  }
+
+  // --c es el color del integrante; lo pone la plantilla.
+  .avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--c) 22%, transparent);
+    color: var(--c);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .name {
+    font-size: 15px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .me {
+    font-weight: 500;
+    color: var(--nodo-muted);
+  }
+
+  .detail {
+    font-size: 13px;
+    color: var(--nodo-muted);
+  }
+
+  .go {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    background: rgba(var(--ion-color-primary-rgb), 0.18);
+    color: var(--nodo-primary-soft);
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
+
+/* ---------- Sin viaje ---------- */
+
+.empty {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  h2 {
+    margin: 0;
+    font-family: var(--nodo-font-title);
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--nodo-muted);
+  }
+
+  button {
+    height: 52px;
+    border: none;
+    border-radius: 16px;
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+}
+
+.chip,
+.btn-locate,
+.sheet,
+.empty {
+  z-index: 10;
+}
+
+.btn-camera {
+  top: calc(var(--ion-safe-area-top, 0px) + 72px);
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: none;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.btn-theme {
+  top: calc(var(--ion-safe-area-top, 0px) + 132px);
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: 1px solid var(--nodo-border);
+  background: var(--nodo-surface);
+  color: var(--ion-text-color);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.chip,
+.btn-locate,
+.btn-camera,
+.btn-theme,
+.sheet,
+.empty {
+  z-index: 10;
+}

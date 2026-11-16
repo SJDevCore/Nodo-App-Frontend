@@ -1,25 +1,156 @@
+// src/app/features/auth/pages/login/login.page.scss
+// Pantallas de bienvenida, inicio de sesión y registro.
+
 .auth-container {
+  position: relative;
   min-height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 16px 20px 32px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 24px) 20px 32px;
   box-sizing: border-box;
+  overflow: hidden;
+  // Cielo nocturno: resplandor azul arriba y uno cálido abajo.
+  background:
+    radial-gradient(80% 40% at 50% 0%, rgba(var(--ion-color-primary-rgb), 0.28) 0%, transparent 70%),
+    radial-gradient(70% 35% at 85% 100%, rgba(251, 146, 60, 0.12) 0%, transparent 70%),
+    linear-gradient(180deg, #070c18 0%, #0b1220 55%, #0e1730 100%);
 }
 
+/* ---------- Estrellas ---------- */
+
+.stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  // Cada capa es un patrón de puntos que se repite. La capa mide una baldosa
+  // más que la pantalla y sube exactamente una baldosa: el ciclo no se nota.
+  span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    will-change: transform;
+  }
+
+  // Lejanas: pequeñas, muchas, lentas.
+  .s1 {
+    height: calc(100% + 220px);
+    background-size: 220px 220px;
+    background-image:
+      radial-gradient(circle at 24px 36px, #fff 0 0.8px, transparent 1.4px),
+      radial-gradient(circle at 96px 148px, #fff 0 0.8px, transparent 1.4px),
+      radial-gradient(circle at 170px 70px, #cbd5e1 0 0.8px, transparent 1.4px),
+      radial-gradient(circle at 60px 200px, #cbd5e1 0 0.7px, transparent 1.3px),
+      radial-gradient(circle at 200px 180px, #fff 0 0.7px, transparent 1.3px);
+    opacity: 0.55;
+    animation:
+      drift-220 90s linear infinite,
+      twinkle 5s ease-in-out infinite alternate;
+  }
+
+  // Medias.
+  .s2 {
+    height: calc(100% + 340px);
+    background-size: 340px 340px;
+    background-image:
+      radial-gradient(circle at 60px 90px, #fff 0 1.1px, transparent 1.9px),
+      radial-gradient(circle at 250px 40px, #c7d2fe 0 1.1px, transparent 1.9px),
+      radial-gradient(circle at 150px 260px, #fff 0 1px, transparent 1.8px),
+      radial-gradient(circle at 300px 210px, #c7d2fe 0 1px, transparent 1.8px);
+    opacity: 0.75;
+    animation:
+      drift-340 60s linear infinite,
+      twinkle 3.5s ease-in-out 1s infinite alternate;
+  }
+
+  // Cercanas: grandes, pocas, rápidas y con color.
+  .s3 {
+    height: calc(100% + 520px);
+    background-size: 520px 520px;
+    background-image:
+      radial-gradient(circle at 110px 130px, #fff 0 1.6px, rgba(255, 255, 255, 0.25) 2.4px, transparent 4px),
+      radial-gradient(circle at 400px 330px, #8fa8ff 0 1.6px, rgba(143, 168, 255, 0.3) 2.4px, transparent 4px),
+      radial-gradient(circle at 260px 470px, #fdba74 0 1.4px, rgba(253, 186, 116, 0.3) 2.2px, transparent 4px);
+    animation:
+      drift-520 40s linear infinite,
+      twinkle 2.6s ease-in-out 0.5s infinite alternate;
+  }
+
+  .shooting {
+    position: absolute;
+    top: 14%;
+    left: -140px;
+    width: 130px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, #fff);
+    opacity: 0;
+    animation: shoot 9s ease-in 2s infinite;
+  }
+}
+
+@keyframes drift-220 {
+  to {
+    transform: translateY(-220px);
+  }
+}
+
+@keyframes drift-340 {
+  to {
+    transform: translateY(-340px);
+  }
+}
+
+@keyframes drift-520 {
+  to {
+    transform: translateY(-520px);
+  }
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Cruza la pantalla en el primer 12 % del ciclo y descansa el resto.
+@keyframes shoot {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(18deg);
+  }
+  3% {
+    opacity: 1;
+  }
+  12%,
+  100% {
+    opacity: 0;
+    transform: translate(150vw, 48vw) rotate(18deg);
+  }
+}
+
+/* ---------- Contenido ---------- */
+
 .view {
+  position: relative; // por encima de las estrellas
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
-  animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -27,10 +158,16 @@
   }
 }
 
-// Quien pide menos movimiento en su sistema no ve la animación.
+// Quien pide menos movimiento en su sistema ve el cielo quieto.
 @media (prefers-reduced-motion: reduce) {
-  .view {
+  .view,
+  .stars span,
+  .hero-art {
     animation: none;
+  }
+
+  .stars .shooting {
+    display: none;
   }
 }
 
@@ -42,105 +179,148 @@
 
 .hero-art {
   width: 100%;
-  max-width: 320px;
-  margin: 0 auto 24px;
+  max-width: 300px;
+  margin: 0 auto 28px;
+  filter: drop-shadow(0 0 28px rgba(var(--ion-color-primary-rgb), 0.35));
+  animation: float 6s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-8px);
+  }
 }
 
 .hero-title {
-  margin: 0 0 12px;
-  font-family: var(--nodo-font-title);
-  font-size: 30px;
+  margin: 0 0 14px;
+  font-size: 33px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.16;
   letter-spacing: -0.02em;
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--nodo-primary-soft) 0%, #fb923c 100%);
+  background: linear-gradient(120deg, #a5b9ff 0%, #fb923c 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .hero-subtitle {
-  margin: 0 0 32px;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--nodo-muted);
+  margin: 0 0 36px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #b8c4d9;
 }
 
 .welcome-actions {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 14px;
 }
 
-/* ---------- Botones píldora ---------- */
+/* ---------- Botones ---------- */
 
 .btn-pill {
-  height: 54px;
-  border-radius: 9999px;
+  width: 100%;
+  height: 56px;
+  // flex: none evita que el botón se encoja dentro de una columna.
+  flex: none;
+  padding: 0 20px;
+  border-radius: 16px;
   border: none;
   font: inherit;
   font-size: 16px;
   font-weight: 700;
+  letter-spacing: 0.02em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   transition:
-    transform 0.2s ease,
+    transform 0.15s ease,
     box-shadow 0.2s ease,
+    background 0.2s ease,
     border-color 0.2s ease;
 
+  ion-icon {
+    font-size: 20px;
+  }
+
   &:active:not(:disabled) {
-    transform: scale(0.98);
+    transform: translateY(1px) scale(0.99);
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: default;
+    box-shadow: none;
   }
 
   &.primary {
-    flex: 1.2;
-    background: linear-gradient(135deg, #7a96ff 0%, #6b8aff 100%);
+    background: linear-gradient(135deg, #8fa8ff 0%, #6b8aff 60%, #5e79e0 100%);
     color: var(--ion-color-primary-contrast);
-    box-shadow: 0 10px 22px -6px rgba(var(--ion-color-primary-rgb), 0.5);
+    box-shadow:
+      0 14px 32px -10px rgba(var(--ion-color-primary-rgb), 0.85),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+    &:hover:not(:disabled) {
+      box-shadow:
+        0 18px 38px -10px rgba(var(--ion-color-primary-rgb), 1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
   }
 
+  // Vidrio: deja ver las estrellas detrás.
   &.secondary {
-    flex: 1;
-    background: var(--nodo-surface);
+    background: rgba(255, 255, 255, 0.06);
     color: var(--ion-text-color);
-    border: 1.5px solid var(--nodo-border);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 
     &:hover {
-      border-color: var(--ion-color-primary);
+      border-color: var(--nodo-primary-soft);
+      background: rgba(var(--ion-color-primary-rgb), 0.12);
     }
   }
 
   &.submit {
-    width: 100%;
-    margin-top: 8px;
+    margin-top: 10px;
   }
 }
 
-/* ---------- 2 y 3. Formularios ---------- */
+/* ---------- 2 y 3. Formularios: tarjeta de vidrio ---------- */
+
+.view:not(.welcome) {
+  padding: 22px 20px 12px;
+  border-radius: 28px;
+  background: rgba(19, 28, 49, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 30px 60px -20px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
 
 .top-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 
 .btn-back {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
-  background: var(--nodo-surface);
-  border: 1px solid var(--nodo-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--ion-text-color);
   font-size: 20px;
   display: flex;
@@ -150,14 +330,27 @@
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: var(--ion-color-primary);
+    border-color: var(--nodo-primary-soft);
   }
 }
 
 .brand {
-  font-family: var(--nodo-font-title);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 18px;
   font-weight: 700;
+  letter-spacing: 0.01em;
+
+  // Punto de marca delante del nombre.
+  &::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    box-shadow: 0 0 0 4px rgba(var(--ion-color-primary-rgb), 0.25);
+  }
 }
 
 .form-header {
@@ -165,16 +358,17 @@
 
   h2 {
     margin: 0 0 8px;
-    font-family: var(--nodo-font-title);
     font-size: 30px;
     font-weight: 700;
     letter-spacing: -0.02em;
+    line-height: 1.15;
   }
 
   p {
     margin: 0;
     font-size: 15px;
-    color: var(--nodo-muted);
+    line-height: 1.5;
+    color: #b8c4d9;
   }
 }
 
@@ -186,9 +380,10 @@
   padding: 12px 14px;
   border-radius: 14px;
   background: rgba(var(--ion-color-danger-rgb), 0.12);
+  border: 1px solid rgba(var(--ion-color-danger-rgb), 0.35);
   color: var(--ion-color-danger);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 
   ion-icon {
     flex-shrink: 0;
@@ -209,13 +404,14 @@ form {
 
   label {
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
+    letter-spacing: 0.02em;
     color: #cbd5e1;
   }
 
   small {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--ion-color-danger);
   }
 }
@@ -223,25 +419,28 @@ form {
 .input-wrapper {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 54px;
-  padding: 0 14px;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
   border-radius: 16px;
-  background: var(--nodo-surface);
-  border: 1.5px solid var(--nodo-border);
+  background: rgba(7, 12, 24, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 
   > ion-icon {
     flex-shrink: 0;
     font-size: 20px;
     color: var(--nodo-muted);
+    transition: color 0.2s ease;
   }
 
   &:focus-within {
+    background: rgba(7, 12, 24, 0.85);
     border-color: var(--ion-color-primary);
-    box-shadow: 0 0 0 4px rgba(var(--ion-color-primary-rgb), 0.18);
+    box-shadow: 0 0 0 4px rgba(var(--ion-color-primary-rgb), 0.22);
 
     > ion-icon {
       color: var(--nodo-primary-soft);
@@ -260,13 +459,18 @@ form {
     outline: none;
     background: transparent;
     font: inherit;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 16px;
     color: var(--ion-text-color);
 
     &::placeholder {
       color: #7e8ba3;
-      font-weight: 400;
+    }
+
+    // Evita el fondo claro que pone el navegador al autocompletar.
+    &:-webkit-autofill {
+      -webkit-text-fill-color: var(--ion-text-color);
+      box-shadow: 0 0 0 1000px #0a1122 inset;
+      caret-color: var(--ion-text-color);
     }
   }
 }
@@ -288,6 +492,8 @@ form {
 
 .switch-row {
   margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;

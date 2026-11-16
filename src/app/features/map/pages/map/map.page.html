@@ -1,13 +1,102 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>map</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [scrollY]="false">
+  <div #mapEl class="map"></div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">map</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- Avisos de conexión, arriba -->
+  @if (trips.active() && !tracking.connected()) {
+  <div class="chip warn" slot="fixed" role="status">Reconectando…</div>
+  } @else if (tracking.error(); as message) {
+  <div class="chip warn" slot="fixed" role="status">{{ message }}</div>
+  }
+
+  <button type="button" class="btn-locate" slot="fixed" (click)="centerOnMe()" aria-label="Centrar en mi ubicación">
+    <ion-icon name="locate-outline" aria-hidden="true"></ion-icon>
+  </button>
+
+  <button
+    type="button"
+    class="btn-camera"
+    slot="fixed"
+    [disabled]="saving()"
+    (click)="takePhoto()"
+    aria-label="Tomar foto y guardar recuerdo"
+  >
+    <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+  </button>
+  <button
+    type="button"
+    class="btn-theme"
+    slot="fixed"
+    (click)="toggleTheme()"
+    [attr.aria-label]="mapTheme() === 'dark' ? 'Cambiar a mapa claro' : 'Cambiar a mapa oscuro'"
+  >
+    <ion-icon [name]="mapTheme() === 'dark' ? 'sunny-outline' : 'moon-outline'" aria-hidden="true"></ion-icon>
+  </button>
+
+  @if (trips.active(); as trip) {
+  <section class="sheet" slot="fixed">
+    <button type="button" class="sheet-head" (click)="toggleSheet()" [attr.aria-expanded]="sheetOpen()">
+      <span class="titles">
+        <span class="title">{{ trip.name }}</span>
+        <span class="sub">{{ onlineCount() }} de {{ members().length }} en el mapa</span>
+      </span>
+      <ion-icon [name]="sheetOpen() ? 'chevron-down-outline' : 'chevron-up-outline'" aria-hidden="true"></ion-icon>
+    </button>
+
+    @if (sheetOpen()) { @if (routeLoading()) {
+    <div class="route">
+      <ion-spinner name="crescent" aria-label="Calculando ruta"></ion-spinner>
+      <span class="route-text">Calculando la ruta…</span>
+    </div>
+    } @else if (route(); as r) {
+    <div class="route">
+      <ion-icon name="navigate-outline" aria-hidden="true"></ion-icon>
+      <span class="route-text">
+        <strong>{{ r.distance }} · {{ r.duration }}</strong>
+        <span>Ruta hasta {{ r.name }}</span>
+      </span>
+      <button type="button" (click)="clearRoute()" aria-label="Quitar ruta">
+        <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+    } @if (routeError(); as message) {
+    <p class="route-error" role="alert">{{ message }}</p>
+    }
+
+    <ul>
+      @for (member of members(); track member.userId) {
+      <li>
+        <button
+          type="button"
+          class="member"
+          [class.selected]="selectedId() === member.userId"
+          [style.--c]="member.color"
+          (click)="selectMember(member)"
+        >
+          <span class="avatar" aria-hidden="true">{{ member.initial }}</span>
+          <span class="info">
+            <span class="name">
+              {{ member.name }} @if (member.isMe) {
+              <span class="me">· tú</span>
+              }
+            </span>
+            <span class="detail">
+              {{ member.emoji }} {{ member.vehicleLabel }} · {{ member.position ? 'En línea' : 'Sin ubicación' }}
+            </span>
+          </span>
+          @if (!member.isMe && member.position) {
+          <span class="go">Ruta</span>
+          }
+        </button>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+  } @else {
+  <section class="empty" slot="fixed">
+    <h2>Estás explorando por tu cuenta</h2>
+    <p>Ya puedes ver tu ubicación. Crea un viaje o únete con un código para ver a tu grupo.</p>
+    <button type="button" (click)="goToTrips()">Ir a Viaje</button>
+  </section>
+  }
 </ion-content>
